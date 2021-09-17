@@ -1,20 +1,43 @@
 # -*-coding: utf-8 -*-
-
+import datetime
 
 import websockets
 import asyncio
 import json
 from project_manager import ProjectManager
 
-ret = {"project": {},
-       "caption": {}}
+PM = ProjectManager()
+
+# 한국시간
+timezone_kst = datetime.timezone(datetime.timedelta(hours=9))
 
 
 # 클라이언트 접속이 되면 호출된다.
 async def accept(websocket, path):
     data = await websocket.recv()
-    print("receive : " + data)
+    data = json.loads(data)
+    print("receive : " + str(data))
+
+    # 프로젝트 생성
+    if data['create_project']:
+        k, v = map(lambda x: x[0], zip(data['create_project']))
+        try:
+            PM.projects[k] = {'metadata': [v, PM.getfilename(v),
+                                           datetime.datetime.now(timezone_kst).strftime('%Y.%m.%d %H:%M')],
+                              'work': {}}
+        except:
+            print("공유링크 오류")
+
+    pid = data['get_project_work']
+    # 프로젝트 리스트 반환
+    if not pid:
+        ret = list(map(lambda x: x['metadata'], PM.projects.values()))
+    # 선택한 프로젝트 작업 반환
+    else:
+        ret = PM.projects[pid]['work']
+
     await websocket.send("echo : " + json.dumps(ret))
+
 
 if __name__ == "__main__":
     pm = ProjectManager()
