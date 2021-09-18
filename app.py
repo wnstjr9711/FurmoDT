@@ -21,27 +21,29 @@ async def accept(websocket, path):
     # 프로젝트 생성
     if data['create_project']:
         k, v = map(lambda x: x[0], zip(data['create_project']))
+        # TODO k값 중복일때 예외처리
         try:
             PM.projects[k] = {'metadata': [v, PM.getfilename(v),
                                            datetime.datetime.now(timezone_kst).strftime('%Y.%m.%d %H:%M')],
                               'work': {}}
+        # TODO 예외처리 강화
         except:
             print("공유링크 오류")
 
     pid = data['get_project_work']
     # 프로젝트 리스트 반환
     if not pid:
-        ret = list(map(lambda x: x['metadata'], PM.projects.values()))
+        ret = list(PM.projects.keys())
     # 선택한 프로젝트 작업 반환
     else:
-        ret = PM.projects[pid]['work']
+        ret = PM.projects[pid]
 
-    await websocket.send("echo : " + json.dumps(ret))
+    await websocket.send(json.dumps(ret))
 
 
 if __name__ == "__main__":
     pm = ProjectManager()
     # 비동기로 서버를 대기한다.
-    start_server = websockets.serve(accept, "0.0.0.0", 5000)
+    start_server = websockets.serve(accept, "0.0.0.0", 9998)
     asyncio.get_event_loop().run_until_complete(start_server)
     asyncio.get_event_loop().run_forever()
