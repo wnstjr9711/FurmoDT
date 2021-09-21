@@ -4,9 +4,9 @@ import datetime
 import websockets
 import asyncio
 import json
-from project_manager import ProjectManager
+import project_manager as pm
 
-PM = ProjectManager()
+PM = pm.ProjectManager()
 
 # 한국시간
 timezone_kst = datetime.timezone(datetime.timedelta(hours=9))
@@ -22,13 +22,9 @@ async def accept(websocket, path):
     if data['create_project']:
         k, v = map(lambda x: x[0], zip(data['create_project']))
         # TODO k값 중복일때 예외처리
-        try:
-            PM.projects[k] = {'metadata': [v, PM.getfilename(v),
-                                           datetime.datetime.now(timezone_kst).strftime('%Y.%m.%d %H:%M')],
-                              'work': {}}
-        # TODO 예외처리 강화
-        except:
-            print("공유링크 오류")
+        PM.projects[k] = {'metadata': [v, pm.getfilename(v),
+                                       datetime.datetime.now(timezone_kst).strftime('%Y.%m.%d %H:%M')],
+                          'work': {}}
 
     pid = data['get_project_work']
     # 프로젝트 리스트 반환
@@ -42,7 +38,6 @@ async def accept(websocket, path):
 
 
 if __name__ == "__main__":
-    pm = ProjectManager()
     # 비동기로 서버를 대기한다.
     start_server = websockets.serve(accept, "0.0.0.0", 9998)
     asyncio.get_event_loop().run_until_complete(start_server)
