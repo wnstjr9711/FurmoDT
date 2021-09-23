@@ -10,13 +10,13 @@ class ProjectManager:
         self.projects = dict()
 
     def save(self, data):
-        '''
+        """
         :param data: {1: create_project, 2: delete_project, 3: upload_work}
         :return:
-        '''
-        if data['0']:
+        """
+        if '0' in data:
             pass
-        elif data['1']:
+        elif '1' in data:
             key, url, video = data['1']
             self.projects[key] = {'metadata': [url, video, datetime.now(KST).strftime('%Y.%m.%d %H:%M')],
                                   'work': {}}

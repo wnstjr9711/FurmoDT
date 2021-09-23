@@ -18,7 +18,9 @@ async def accept(websocket, path):
         print("receive : " + str(data))
 
         # 변경사항
-        PM.save(data['POST'])
+        post_data = data['POST']
+        if post_data:
+            PM.save(post_data)
 
         # 프로젝트 리스트 or 선택한 프로젝트 작업 반환
         pid = data['GET']
