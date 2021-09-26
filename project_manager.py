@@ -19,5 +19,7 @@ class ProjectManager:
         elif '1' in data:
             key, url, video = data['1']
             self.projects[key] = {'metadata': [url, video, datetime.now(KST).strftime('%Y.%m.%d %H:%M')],
-                                  'work': {}}
+                                  'work': {'work_id': list(), 'tc_in': list(), 'tc_out': list(),
+                                           'default_language': list()}}
             # TODO k값 중복일때 예외처리
+

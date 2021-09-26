@@ -1,6 +1,7 @@
 # -*-coding: utf-8 -*-
 
 import websockets
+from websockets.exceptions import ConnectionClosedError
 import asyncio
 import json
 from project_manager import ProjectManager
@@ -13,19 +14,22 @@ PM = ProjectManager()
 # 클라이언트 접속이 되면 호출된다.
 async def accept(websocket, path):
     while True:
-        data = await websocket.recv()
-        data = json.loads(data)
-        print("receive : " + str(data))
+        try:
+            data = await websocket.recv()
+            data = json.loads(data)
+            print("receive : " + str(data))
 
-        # 변경사항
-        post_data = data['POST']
-        if post_data:
-            PM.save(post_data)
+            # 변경사항
+            post_data = data['POST']
+            if post_data:
+                PM.save(post_data)
 
-        # 프로젝트 리스트 or 선택한 프로젝트 작업 반환
-        pid = data['GET']
-        ret = list(PM.projects.keys()) if not pid else PM.projects[pid]
-        await websocket.send(json.dumps(ret))
+            # 프로젝트 리스트 or 선택한 프로젝트 작업 반환
+            pid = data['GET']
+            ret = list(PM.projects.keys()) if not pid else PM.projects[pid]
+            await websocket.send(json.dumps(ret))
+        except ConnectionClosedError:
+            break
 
 
 if __name__ == "__main__":
