@@ -26,8 +26,13 @@ async def accept(websocket, path):
 
             # 프로젝트 리스트 or 선택한 프로젝트 작업 반환
             pid = data['GET']
-            ret = list(PM.projects.keys()) if not pid else PM.projects[pid]
+            if not pid:
+                ret = list(PM.projects.keys())
+            else:
+                ret = PM.get_project_json(pid)
+
             await websocket.send(json.dumps(ret))
+
         except ConnectionClosedError:
             break
 

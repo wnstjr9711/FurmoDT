@@ -1,6 +1,6 @@
-import requests
+import pandas as pd
+import numpy as np
 from datetime import datetime, timezone, timedelta
-from bs4 import BeautifulSoup
 
 KST = timezone(timedelta(hours=9))
 
@@ -8,18 +8,29 @@ KST = timezone(timedelta(hours=9))
 class ProjectManager:
     def __init__(self):
         self.projects = dict()
+        self.work = dict()
 
     def save(self, data):
         """
-        :param data: {1: create_project, 2: delete_project, 3: upload_work}
-        :return:
+        :param data: {1: create_project, 2: delete_project, 3: add_language}
         """
         if '0' in data:
             pass
         elif '1' in data:
+            # TODO key 값 중복일때 예외처리
             key, url, video = data['1']
-            self.projects[key] = {'metadata': [url, video, datetime.now(KST).strftime('%Y.%m.%d %H:%M')],
-                                  'work': {'work_id': list(), 'tc_in': list(), 'tc_out': list(),
-                                           'default_language': list()}}
-            # TODO k값 중복일때 예외처리
+            self.work[key] = pd.DataFrame([[i for i in range(4)] for j in range(10)],
+                                          columns=['번호', 'TC_IN', 'TC_OUT', '원어'])
+            self.projects[key] = {'metadata': {'url': url, 'video': video, 'date': datetime.now(KST).strftime('%Y.%m.%d %H:%M'), 'key': key},
+                                  'work': self.work[key]
+                                  }
+        elif '3' in data:
+            key, language = data['3']
+            self.work[key][language] = np.nan
+
+    def get_project_json(self, pid):
+        project = dict(self.projects[pid])
+        project['work'] = self.work[pid].to_json()
+        return project
+
 
