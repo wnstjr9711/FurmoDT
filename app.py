@@ -1,44 +1,26 @@
 # -*-coding: utf-8 -*-
-
-import websockets
-from websockets.exceptions import ConnectionClosedError
-import asyncio
-import json
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from project_manager import ProjectManager
+
+app = FastAPI()
 
 PM = ProjectManager()
 
-# 한국시간
 
-
-# 클라이언트 접속이 되면 호출된다.
-async def accept(websocket, path):
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
     while True:
         try:
-            data = await websocket.recv()
-            data = json.loads(data)
+            data = await websocket.receive_json()
             print("receive : " + str(data))
-
-            # 변경사항
             post_data = data['POST']
             if post_data:
                 PM.save(post_data)
 
-            # 프로젝트 리스트 or 선택한 프로젝트 작업 반환
             pid = data['GET']
-            if not pid:
-                ret = list(PM.projects.keys())
-            else:
-                ret = PM.get_project_json(pid)
+            ret = list(PM.projects.keys()) if not pid else PM.get_project_json(pid)
+            await websocket.send_json(ret)
 
-            await websocket.send(json.dumps(ret))
-
-        except ConnectionClosedError:
+        except WebSocketDisconnect:
             break
-
-
-if __name__ == "__main__":
-    # 비동기로 서버를 대기한다.
-    start_server = websockets.serve(accept, "0.0.0.0", 9998)
-    asyncio.get_event_loop().run_until_complete(start_server)
-    asyncio.get_event_loop().run_forever()
