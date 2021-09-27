@@ -13,7 +13,6 @@ async def websocket_endpoint(websocket: WebSocket):
     while True:
         try:
             data = await websocket.receive_json()
-            print("receive : " + str(data))
             post_data = data['POST']
             if post_data:
                 PM.save(post_data)
