@@ -29,3 +29,4 @@ async def websocket_endpoint(websocket: WebSocket):
 
         except WebSocketDisconnect:
             PM.default_connection(websocket)
+            break
