@@ -20,7 +20,7 @@ class ProjectManager:
             return full_data
         else:
             update = self.projects[room]['worker'][websocket.client]
-            partial_data = {'update': list()}
+            partial_data = {'update': list(), 'header': list(self.projects[room]['work'])}
             while update:
                 partial_data['update'].append(update.pop())
             return partial_data
@@ -41,8 +41,9 @@ class ProjectManager:
             # TODO key 값 중복일때 예외처리
             room, url, video = data['1']
             header = ['TC_IN', 'TC_OUT', '원어']
+            work = pd.DataFrame([['' for i in range(len(header))] for j in range(9999)], columns=header)
             self.projects[room] = {'metadata': {'url': url, 'video': video, 'date': datetime.now(KST).strftime('%Y.%m.%d %H:%M')},
-                                   'work': pd.DataFrame([['' for i in range(len(header))] for j in range(9999)], columns=header),
+                                   'work': work,
                                    'worker': dict()
                                    }
         elif '3' in data:
