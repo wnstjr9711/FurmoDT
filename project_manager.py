@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 from datetime import datetime, timezone, timedelta
 
 KST = timezone(timedelta(hours=9))
@@ -7,8 +6,30 @@ KST = timezone(timedelta(hours=9))
 
 class ProjectManager:
     def __init__(self):
+        self.client = dict()  # key: websocket.client, value: room
         self.projects = dict()
-        self.work = dict()
+
+    def join(self, websocket, room):
+        if websocket.client not in self.projects[room]['worker']:
+            self.projects[room]['worker'][websocket.client] = list()
+            self.client[websocket.client] = room
+
+            full_data = dict(self.projects[room])
+            full_data['work'] = self.projects[room]['work'].to_json()
+            full_data['worker'] = None
+            return full_data
+        else:
+            update = self.projects[room]['worker'][websocket.client]
+            partial_data = {'update': list()}
+            while update:
+                partial_data['update'].append(update.pop())
+            return partial_data
+
+    def default_connection(self, websocket):
+        if websocket.client in self.client:
+            self.projects[self.client[websocket.client]]['worker'].pop(websocket.client)
+            self.client.pop(websocket.client)
+        return list(self.projects)
 
     def save(self, data):
         """
@@ -18,24 +39,21 @@ class ProjectManager:
             pass
         elif '1' in data:
             # TODO key 값 중복일때 예외처리
-            key, url, video = data['1']
-            header = ['번호', 'TC_IN', 'TC_OUT', '원어']
-            self.work[key] = pd.DataFrame([['' for i in range(len(header))] for j in range(2000)],
-                                          columns=header)
-            self.projects[key] = {'metadata': {'url': url, 'video': video, 'date': datetime.now(KST).strftime('%Y.%m.%d %H:%M'), 'key': key},
-                                  'work': self.work[key]
-                                  }
+            room, url, video = data['1']
+            header = ['TC_IN', 'TC_OUT', '원어']
+            self.projects[room] = {'metadata': {'url': url, 'video': video, 'date': datetime.now(KST).strftime('%Y.%m.%d %H:%M')},
+                                   'work': pd.DataFrame([['' for i in range(len(header))] for j in range(9999)], columns=header),
+                                   'worker': dict()
+                                   }
         elif '3' in data:
-            key, language = data['3']
-            self.work[key][language] = ''
+            room, language = data['3']
+            self.projects[room]['work'][language] = ''
 
         elif '4' in data:
-            key, row, column, text = data['4']
-            self.work[key].iloc[row, column] = text
+            room, row, column, text = data['4']
+            self.projects[room]['work'].iloc[row, column] = text
+            for client in self.projects[room]['worker']:
+                self.projects[room]['worker'][client].append((row, column, text))
 
-    def get_project_json(self, pid):
-        project = dict(self.projects[pid])
-        project['work'] = self.work[pid].to_json()
-        return project
 
 

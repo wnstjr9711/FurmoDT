@@ -13,13 +13,19 @@ async def websocket_endpoint(websocket: WebSocket):
     while True:
         try:
             data = await websocket.receive_json()
+
             post_data = data['POST']
             if post_data:
                 PM.save(post_data)
 
-            pid = data['GET']
-            ret = list(PM.projects.keys()) if not pid else PM.get_project_json(pid)
+            # 클라이언트 작업 참여 정보
+            room = data['GET']
+            if room:
+                ret = PM.join(websocket, room)
+            else:
+                ret = PM.default_connection(websocket)
+
             await websocket.send_json(ret)
 
         except WebSocketDisconnect:
-            break
+            PM.default_connection(websocket)
