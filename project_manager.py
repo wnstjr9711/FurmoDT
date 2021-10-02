@@ -1,5 +1,5 @@
-import pandas as pd
 from datetime import datetime, timezone, timedelta
+import pandas as pd
 
 KST = timezone(timedelta(hours=9))
 
@@ -41,8 +41,10 @@ class ProjectManager:
         elif '1' in data:
             pid, url, video = data['1']
             num = 1
-            while pid in self.projects:
-                pid = pid + '({})'.format(num)
+            if pid in self.projects:
+                while '{} ({})'.format(pid, num) in self.projects:
+                    num += 1
+                pid = '{} ({})'.format(pid, num)
             header = ['TC_IN', 'TC_OUT', '원어']
             work = pd.DataFrame([['' for i in range(len(header))] for j in range(9999)], columns=header)
             self.projects[pid] = {'metadata': {'url': url, 'video': video, 'date': datetime.now(KST).strftime('%Y.%m.%d %H:%M')},
