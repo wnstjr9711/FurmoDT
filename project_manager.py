@@ -22,7 +22,7 @@ class ProjectManager:
             update = self.projects[room]['worker'][ws_client]
             partial_data = {'update': list(), 'header': list(self.projects[room]['work'])}
             while update:
-                partial_data['update'].append(update.pop())
+                partial_data['update'].append(update.pop(0))
             return partial_data
 
     def default_connection(self, ws_client):
