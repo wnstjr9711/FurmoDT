@@ -33,7 +33,7 @@ class ProjectManager:
 
     def save(self, data, ws_client):
         """
-        :param data: {1: create_project, 2: delete_project, 3: add_language, 4: update_work}
+        :param data: {1: create_project, 2: delete_project, 3: add_language, 4: delete_language, 5: update_work}
         :param ws_client: websocket.client
         """
         if '0' in data:
@@ -58,7 +58,12 @@ class ProjectManager:
 
         elif '4' in data:
             room = self.client[ws_client]
-            for data in data['4']:
+            language = data['4'][0]
+            del self.projects[room]['work'][language]
+
+        elif '5' in data:
+            room = self.client[ws_client]
+            for data in data['5']:
                 row, column, text = data
                 self.projects[room]['work'].iloc[row, column] = text
                 for client in self.projects[room]['worker']:
