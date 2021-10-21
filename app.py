@@ -1,33 +1,15 @@
 # -*-coding: utf-8 -*-
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from project_manager import ProjectManager
+import uvicorn
+from fastapi import FastAPI
+from routes import auth, websocket
+from src.database.conn import SQLAlchemy
+
+db = SQLAlchemy()
+db.create_table()
 
 app = FastAPI()
+app.include_router(auth.router)
+app.include_router(websocket.router)
 
-PM = ProjectManager()
-
-
-@app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()
-    ws_client = websocket.client
-    while True:
-        try:
-            data = await websocket.receive_json()
-
-            post_data = data['POST']
-            if post_data:
-                PM.save(post_data, ws_client)
-
-            # 클라이언트 작업 참여 정보
-            room = data['GET']
-            if room:
-                ret = PM.join(ws_client, room)
-            else:
-                ret = PM.default_connection(ws_client)
-
-            await websocket.send_json(ret)
-
-        except WebSocketDisconnect:
-            PM.default_connection(ws_client)
-            break
+if __name__ == "__main__":
+    uvicorn.run("app:app", reload=True)
