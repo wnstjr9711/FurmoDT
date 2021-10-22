@@ -1,18 +1,30 @@
+import json
+
 from fastapi import APIRouter
 from src.database.conn import SQLAlchemy
-import bcrypt
 
 router = APIRouter()
 
 
 @router.post('/register')
 async def register(user_id, user_pw):
-    user = user_id, bcrypt.hashpw(user_pw.encode('utf-8'), bcrypt.gensalt())
+    """
+    user_id: `str(45)`\n
+    user_pw: `str`
+    """
     db = SQLAlchemy()
-    db.register_user(*user, 1)
+    db.user_register(user_id, user_pw, 1)
     return None
 
 
 @router.post('/login')
-async def login(client_id, client_password):
-    return None
+async def login(user_id, user_pw):
+    """
+    user_id: `str(45)`\n
+    user_pw: `str`
+    """
+    db = SQLAlchemy()
+    (msg, auth_level) = db.user_login(user_id, user_pw)
+    ret = json.dumps({'msg': msg,
+                      'authority_level': auth_level})
+    return ret
