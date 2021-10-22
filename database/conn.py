@@ -17,11 +17,15 @@ class SQLAlchemy:
         Base.metadata.create_all(self.engine)
 
     def user_register(self, user_id, user_pw, user_auth_level):
+        success = True
         try:
             self.session.add(User(user_id=user_id, user_password=bcrypt.hashpw(user_pw.encode('utf-8'), bcrypt.gensalt()), user_authority_level=user_auth_level))
             self.session.commit()
         except sqlalchemy.exc.IntegrityError:
             print('id already exists')
+            success = False
+        finally:
+            return success
 
     def user_login(self, user_id, user_pw):
         msg, ret = None, None
