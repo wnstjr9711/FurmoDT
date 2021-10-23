@@ -28,16 +28,15 @@ class SQLAlchemy:
             return success
 
     def user_login(self, user_id, user_pw):
-        msg, ret = None, None
+        msg, authority_level = None, None
         try:
             user = self.session.query(User).filter(User.user_id == user_id).first()
-            hashed_pw = user.user_password
-            if bcrypt.checkpw(user_pw.encode('utf-8'), bytes(hashed_pw, encoding='utf-8')):
+            if bcrypt.checkpw(user_pw.encode('utf-8'), bytes(user.user_password, encoding='utf-8')):
                 msg = 'success'
-                ret = user.user_authority_level
+                authority_level = user.user_authority_level
             else:
                 msg = 'wrong password'
         except AttributeError:
             msg = 'id not exists'
         finally:
-            return msg, ret
+            return msg, authority_level
