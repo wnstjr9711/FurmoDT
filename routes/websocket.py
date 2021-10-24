@@ -20,7 +20,7 @@ async def websocket_endpoint(websocket: WebSocket):
             # 클라이언트 작업 참여 정보
             room = data['GET']
             if room:
-                ret = PM.join(ws_client, room)
+                ret = PM.join(ws_client, room, data['id'])
             else:
                 ret = PM.default_connection(ws_client)
 

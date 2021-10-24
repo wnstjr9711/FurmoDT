@@ -9,25 +9,31 @@ class ProjectManager:
         self.client = dict()  # key: websocket.client, value: room
         self.projects = dict()
 
-    def join(self, ws_client, room):
+    def join(self, ws_client, room, client_id):
         if ws_client not in self.projects[room]['worker']:
             self.projects[room]['worker'][ws_client] = list()
-            self.client[ws_client] = room
+            self.client[ws_client] = dict()
+            self.client[ws_client]['room'] = room
+            self.client[ws_client]['client_id'] = client_id
+            self.client[ws_client]['cell'] = None
 
             full_data = dict(self.projects[room])
             full_data['work'] = self.projects[room]['work'].to_json()
-            full_data['worker'] = None
+            full_data['worker'] = list()
             return full_data
         else:
             update = self.projects[room]['worker'][ws_client]
             partial_data = {'update': list(), 'header': list(self.projects[room]['work'])}
             while update:
                 partial_data['update'].append(update.pop(0))
+            partial_data['worker'] = [{self.client[i]['client_id']: self.client[i]['cell']}
+                                      for i in self.projects[room]['worker']]
+
             return partial_data
 
     def default_connection(self, ws_client):
         if ws_client in self.client:
-            self.projects[self.client[ws_client]]['worker'].pop(ws_client)
+            self.projects[self.client[ws_client]['room']]['worker'].pop(ws_client)
             self.client.pop(ws_client)
         return list(self.projects)
 
@@ -52,17 +58,17 @@ class ProjectManager:
                                   'worker': dict()
                                   }
         elif '3' in data:
-            room = self.client[ws_client]
+            room = self.client[ws_client]['room']
             language = data['3'][0]
             self.projects[room]['work'][language] = ''
 
         elif '4' in data:
-            room = self.client[ws_client]
+            room = self.client[ws_client]['room']
             language = data['4'][0]
             del self.projects[room]['work'][language]
 
         elif '5' in data:
-            room = self.client[ws_client]
+            room = self.client[ws_client]['room']
             for data in data['5']:
                 row, column, text = data
                 self.projects[room]['work'].iloc[row, column] = text
