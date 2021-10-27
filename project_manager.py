@@ -74,9 +74,10 @@ class ProjectManager:
             room = self.client[ws_client]['room']
             for d in data['5']:
                 row, column, text = d
-                self.projects[room]['work'].iloc[row, column] = text
-                for client in self.projects[room]['worker']:
-                    self.projects[room]['worker'][client].append((row, column, text))
+                if self.projects[room]['work'].iloc[row, column] != text:
+                    self.projects[room]['work'].iloc[row, column] = text
+                    for client in self.projects[room]['worker']:
+                        self.projects[room]['worker'][client].append((row, column, text))
 
         if '6' in data:
             if ws_client in self.client:
