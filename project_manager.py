@@ -39,7 +39,9 @@ class ProjectManager:
 
     def save(self, data, ws_client):
         """
-        :param data: {1: create_project, 2: delete_project, 3: add_language, 4: delete_language, 5: update_work}
+        :param data: {1: create_project, 2: delete_project,
+                      3: add_language, 4: delete_language,
+                      5: update_work, 6: update_cur_cell}
         :param ws_client: websocket.client
         """
         if '0' in data:
@@ -53,10 +55,11 @@ class ProjectManager:
                 pid = '{} ({})'.format(pid, num)
             header = ['TC_IN', 'TC_OUT', '원어']
             work = pd.DataFrame([['' for i in range(len(header))] for j in range(9999)], columns=header)
-            self.projects[pid] = {'metadata': {'url': url, 'video': video, 'date': datetime.now(KST).strftime('%Y.%m.%d %H:%M')},
-                                  'work': work,
-                                  'worker': dict()
-                                  }
+            self.projects[pid] = {
+                'metadata': {'url': url, 'video': video, 'date': datetime.now(KST).strftime('%Y.%m.%d %H:%M')},
+                'work': work,
+                'worker': dict()
+                }
         elif '3' in data:
             room = self.client[ws_client]['room']
             language = data['3'][0]
@@ -69,11 +72,13 @@ class ProjectManager:
 
         elif '5' in data:
             room = self.client[ws_client]['room']
-            for data in data['5']:
-                row, column, text = data
+            for d in data['5']:
+                row, column, text = d
                 self.projects[room]['work'].iloc[row, column] = text
                 for client in self.projects[room]['worker']:
                     self.projects[room]['worker'][client].append((row, column, text))
 
-
+        if '6' in data:
+            if ws_client in self.client:
+                self.client[ws_client]['cell'] = data['6']
 
