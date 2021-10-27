@@ -15,7 +15,7 @@ class ProjectManager:
             self.client[ws_client] = dict()
             self.client[ws_client]['room'] = room
             self.client[ws_client]['client_id'] = client_id
-            self.client[ws_client]['cell'] = None
+            self.client[ws_client]['cell'] = [0, 1]
 
             full_data = dict(self.projects[room])
             full_data['work'] = self.projects[room]['work'].to_json()
@@ -26,8 +26,8 @@ class ProjectManager:
             partial_data = {'update': list(), 'header': list(self.projects[room]['work'])}
             while update:
                 partial_data['update'].append(update.pop(0))
-            partial_data['worker'] = [{self.client[i]['client_id']: self.client[i]['cell']}
-                                      for i in self.projects[room]['worker']]
+            partial_data['worker'] = {self.client[i]['client_id']: self.client[i]['cell']
+                                      for i in self.projects[room]['worker']}
 
             return partial_data
 
