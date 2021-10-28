@@ -8,10 +8,10 @@ PM = ProjectManager()
 @router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
-    ws_client = websocket.client
     while True:
         try:
             data = await websocket.receive_json()
+            ws_client = data['id']
 
             post_data = data['POST']
             if post_data:
