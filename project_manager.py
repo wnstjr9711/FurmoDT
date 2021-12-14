@@ -60,6 +60,9 @@ class ProjectManager:
                 'work': work,
                 'worker': dict()
                 }
+        elif '2' in data:
+            self.projects.pop(data['2'])
+
         elif '3' in data:
             room = self.client[ws_client]['room']
             language = data['3'][0]
