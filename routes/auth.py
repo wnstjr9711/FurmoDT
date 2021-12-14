@@ -1,8 +1,6 @@
-import json
-
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
-from src.database.conn import SQLAlchemy
+from database.conn import SQLAlchemy
 
 router = APIRouter()
 

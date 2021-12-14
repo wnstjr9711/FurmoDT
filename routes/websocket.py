@@ -1,5 +1,5 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
-from src.project_manager import ProjectManager
+from project_manager import ProjectManager
 
 router = APIRouter()
 PM = ProjectManager()

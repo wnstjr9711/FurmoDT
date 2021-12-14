@@ -2,10 +2,7 @@
 import uvicorn
 from fastapi import FastAPI
 from routes import auth, websocket
-from src.database.conn import SQLAlchemy
-from dotenv import load_dotenv
-
-load_dotenv(".env")
+from database.conn import SQLAlchemy
 
 
 db = SQLAlchemy()
